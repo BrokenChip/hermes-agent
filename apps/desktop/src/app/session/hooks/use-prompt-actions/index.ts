@@ -351,7 +351,12 @@ export function usePromptActions({
           const message: ChatMessage = {
             id: messageId,
             role,
-            parts: [textPart(body)]
+            parts: [textPart(body)],
+            // A local notice exists in time even though no stored row ever
+            // carries it: the epoch-seconds stamp (matching the gateway's
+            // `time.time()` rows) lets the transcript reconciler re-anchor it
+            // by age instead of pinning it to the transcript tail forever.
+            timestamp: Date.now() / 1000
           }
 
           // Mid-turn correction: arrival order. The bubble lands after the

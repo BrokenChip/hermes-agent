@@ -616,8 +616,12 @@ function heldRowIndex(messages: ChatMessage[], held: ChatMessage): number {
  * vanished on the next refresh (#126422). A notice keeps its place in front of
  * the next row the refreshed transcript still holds, so a /btw answer that
  * landed mid-turn survives the steer that puts later rows below it. Trailing
- * notices go at the end; one whose later rows the refresh no longer holds at
- * all (compaction, rewind) goes with them. Idempotent by id and text.
+ * notices anchor before the first surviving row newer than the notice when
+ * both carry timestamps — a compression record must ride the flow it
+ * documents, not pin to the transcript tail forever — and go last otherwise
+ * (no timestamp, or nothing newer survived). One whose later rows the refresh
+ * no longer holds at all (compaction, rewind) goes with them. Idempotent by
+ * id and text.
  */
 export function preserveLocalSystemNotices(nextMessages: ChatMessage[], currentMessages: ChatMessage[]): ChatMessage[] {
   const nextIds = new Set(nextMessages.map(message => message.id))
@@ -654,9 +658,34 @@ export function preserveLocalSystemNotices(nextMessages: ChatMessage[], currentM
   }
 
   const trailing = pending.slice(orphaned)
-  const preserved = trailing.length ? [...merged, ...trailing] : merged
 
-  return preserved.length === nextMessages.length ? nextMessages : preserved
+  if (!trailing.length) {
+    return merged.length === nextMessages.length ? nextMessages : merged
+  }
+
+  // Each trailing notice slots in front of the first surviving row newer than
+  // it (notice and row both timestamped); rows without a timestamp never
+  // anchor, so timestamp-free fixtures keep the plain append-at-end shape.
+  const graftedIds = new Set<string>()
+
+  for (const notice of trailing) {
+    const stamp = notice.timestamp
+    let at = -1
+
+    if (typeof stamp === 'number') {
+      at = merged.findIndex(
+        row => !graftedIds.has(row.id) && typeof row.timestamp === 'number' && row.timestamp > stamp
+      )
+    }
+
+    merged.splice(at >= 0 ? at : merged.length, 0, notice)
+
+    if (at >= 0) {
+      graftedIds.add(notice.id)
+    }
+  }
+
+  return merged.length !== nextMessages.length ? merged : nextMessages
 }
 
 export function branchGroupForUser(userMessage: ChatMessage): string {

@@ -438,6 +438,46 @@ it('preserveLocalSystemNotices re-grafts trailing client-local system notices', 
   expect(preserved.at(-1)?.id).toBe('fallback-switch-1234')
 })
 
+it('preserveLocalSystemNotices re-anchors a timestamped trailing notice before newer rows (compression record rides the flow)', () => {
+  const notice: ChatMessage = {
+    id: 'compress-record-1',
+    parts: [textPart('/compress\nCompressed: 14 → 12 messages')],
+    role: 'system',
+    timestamp: 100.5
+  }
+
+  const refreshed = [
+    { ...row('s1', 'user', 'compacted'), timestamp: 10 },
+    { ...row('s2', 'assistant', 'summary era'), timestamp: 20 },
+    { ...row('s3', 'user', 'follow-up question'), timestamp: 200 }
+  ]
+
+  // The notice predates the compaction: every row it followed is gone, and the
+  // refresh carries rows older AND newer than it. It must anchor before the
+  // first newer row, not pin to the transcript tail forever.
+  const preserved = preserveLocalSystemNotices(refreshed, [refreshed[0], refreshed[1], notice])
+
+  expect(preserved.map(message => message.id)).toEqual(['s1', 's2', 'compress-record-1', 's3'])
+})
+
+it('preserveLocalSystemNotices keeps a trailing notice last when every surviving row predates it', () => {
+  const notice: ChatMessage = {
+    id: 'compress-record-1',
+    parts: [textPart('/compress\nCompressed: 14 → 12 messages')],
+    role: 'system',
+    timestamp: 300
+  }
+
+  const refreshed = [
+    { ...row('s1', 'user', 'compacted'), timestamp: 10 },
+    { ...row('s2', 'assistant', 'summary era'), timestamp: 20 }
+  ]
+
+  const preserved = preserveLocalSystemNotices(refreshed, [refreshed[0], refreshed[1], notice])
+
+  expect(preserved.map(message => message.id)).toEqual(['s1', 's2', 'compress-record-1'])
+})
+
 it('preserveLocalSystemNotices does not duplicate a notice the page already carries', () => {
   const notice: ChatMessage = {
     id: 'fallback-switch-1234',
