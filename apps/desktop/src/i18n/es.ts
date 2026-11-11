@@ -4877,6 +4877,7 @@ export const esOverrides = {
       showEarlier: 'Mostrar mensajes anteriores',
       loadingResponse: 'Hermes está cargando una respuesta',
       compacting: 'Comprimiendo el contexto',
+      compacted: 'Contexto compactado',
       loadingLocalModel: (model: string) => `Cargando ${model} en memoria`,
       processingPrompt: 'Procesando el prompt',
       resumeWhenBackgroundDone: count =>

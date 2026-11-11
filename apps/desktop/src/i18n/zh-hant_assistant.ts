@@ -37,6 +37,7 @@ export const zhHantAssistant = {
       showEarlier: '顯示較早的訊息',
       loadingResponse: 'Hermes 正在載入回覆',
       compacting: '正在壓縮對話上下文',
+      compacted: '上下文已壓縮',
       resumeWhenBackgroundDone: count =>
         count === 1 ? '背景工作完成後將自動繼續' : `${count} 個背景工作完成後將自動繼續`,
       thinking: '思考中',

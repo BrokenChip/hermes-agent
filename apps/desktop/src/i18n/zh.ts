@@ -4306,6 +4306,7 @@ export const zhOverrides = {
       showEarlier: '显示更早的消息',
       loadingResponse: 'Hermes 正在加载回复',
       compacting: '正在压缩对话上下文',
+      compacted: '上下文已压缩',
       loadingLocalModel: model => `正在将 ${model} 载入内存`,
       processingPrompt: '正在处理提示词',
       resumeWhenBackgroundDone: count =>

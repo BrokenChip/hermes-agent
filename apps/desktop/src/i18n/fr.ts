@@ -4903,6 +4903,7 @@ export const frOverrides = {
       showEarlier: 'Afficher les messages précédents',
       loadingResponse: 'Hermes charge une réponse',
       compacting: 'Compression du contexte en cours',
+      compacted: 'Contexte compacté',
       loadingLocalModel: model => `Chargement de ${model} en mémoire`,
       processingPrompt: "Traitement de l'invite",
       resumeWhenBackgroundDone: count =>

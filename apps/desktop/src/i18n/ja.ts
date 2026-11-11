@@ -3331,6 +3331,7 @@ export const jaOverrides = {
       showEarlier: '以前のメッセージを表示',
       loadingResponse: 'Hermes が応答を読み込み中',
       compacting: 'スレッドを要約中',
+      compacted: 'コンテキストを圧縮しました',
       resumeWhenBackgroundDone: count =>
         count === 1
           ? 'バックグラウンドタスクの完了後に再開します'

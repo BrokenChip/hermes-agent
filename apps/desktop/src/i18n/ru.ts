@@ -3569,6 +3569,7 @@ export const ruOverrides = {
       showEarlier: 'Показать ранние сообщения',
       loadingResponse: 'Hermes загружает ответ',
       compacting: 'Сжатие контекста диалога',
+      compacted: 'Контекст сжат',
       resumeWhenBackgroundDone: count =>
         count === 1
           ? 'Продолжится, когда фоновая задача завершится'

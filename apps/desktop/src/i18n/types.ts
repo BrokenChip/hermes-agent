@@ -3925,6 +3925,7 @@ export interface Translations extends NoticeTranslations {
       showEarlier: string
       loadingResponse: string
       compacting: string
+      compacted: string
       loadingLocalModel: (model: string) => string
       processingPrompt: string
       resumeWhenBackgroundDone: (count: number) => string

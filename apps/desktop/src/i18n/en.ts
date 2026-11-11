@@ -4467,6 +4467,7 @@ export const en: Translations = {
       showEarlier: 'Show earlier messages',
       loadingResponse: 'Hermes is loading a response',
       compacting: 'Summarizing thread',
+      compacted: 'Context compacted',
       loadingLocalModel: model => `Loading ${model} into memory`,
       processingPrompt: 'Processing prompt',
       resumeWhenBackgroundDone: count =>

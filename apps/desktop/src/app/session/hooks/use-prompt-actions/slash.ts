@@ -148,7 +148,8 @@ interface SlashCommandDeps {
     sessionId: string,
     role: ChatMessage['role'],
     text: string,
-    storedSessionId?: string | null
+    storedSessionId?: string | null,
+    options?: { at?: number; id?: string }
   ) => void
   branchCurrentSession: () => Promise<boolean>
   busyRef: MutableRefObject<boolean>
@@ -834,6 +835,11 @@ export function useSlashCommand(deps: SlashCommandDeps) {
           }
 
           compressInFlightRef.current.add(sessionId)
+          // The record belongs where the compression STARTED: the report only
+          // arrives after it lands, and anything queued behind the compression
+          // is sent before that (the `ready` edge drains it), so a completion
+          // stamp would place the divider below the very message it precedes.
+          const compressStartedAt = Date.now()
           notify({
             durationMs: 0,
             id: noticeId,
@@ -947,7 +953,15 @@ export function useSlashCommand(deps: SlashCommandDeps) {
                 // the chat after replacing it with the authoritative backend
                 // transcript. Errors remain transient: appending an error as a
                 // system message would look like a successful state change.
-                renderSlashOutput(lines.join('\n'))
+                const report = lines.join('\n')
+
+                // The slash row is client-local: keep the same report per
+                // session so a reload replays it where the compression happened
+                // instead of leaving a compressed chat looking untouched.
+                appendSessionTextMessage(sessionId, 'system', slashStatusText('/compress', report), storedSessionId, {
+                  at: compressStartedAt / 1000,
+                  id: `compaction-${compressStartedAt / 1000}`
+                })
               }
 
               notify({

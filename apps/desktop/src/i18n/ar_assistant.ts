@@ -37,6 +37,7 @@ export const arAssistant = {
       showEarlier: 'عرض الرسائل الأقدم',
       loadingResponse: 'جار تحميل الرد...',
       compacting: 'جارٍ ضغط سياق المحادثة',
+      compacted: 'تم ضغط السياق',
       resumeWhenBackgroundDone: count =>
         count === 1 ? 'سيُستأنف عند انتهاء المهمة الخلفية' : `سيُستأنف عند انتهاء ${count} مهام خلفية`,
       thinking: 'يفكر...',

@@ -4891,6 +4891,7 @@ export const deOverrides = {
       showEarlier: 'Frühere Nachrichten anzeigen',
       loadingResponse: 'Hermes lädt eine Antwort',
       compacting: 'Kontext wird komprimiert',
+      compacted: 'Kontext komprimiert',
       loadingLocalModel: model => `${model} wird in den Speicher geladen`,
       processingPrompt: 'Verarbeite Prompt',
       resumeWhenBackgroundDone: count =>

@@ -1,5 +1,5 @@
 import { MessagePrimitive, useAuiState } from '@assistant-ui/react'
-import { type FC, useState } from 'react'
+import { type FC, type ReactNode, useState } from 'react'
 
 import { MarkdownTextContent } from '@/components/assistant-ui/markdown-text'
 import { messageContentText } from '@/components/assistant-ui/thread/content'
@@ -10,10 +10,62 @@ import { Codicon } from '@/components/ui/codicon'
 import { LogView } from '@/components/ui/log-view'
 import { ToolIcon } from '@/components/ui/tool-icon'
 import { useI18n } from '@/i18n'
+import { parseCompactionOutput, type CompactionOutput } from '@/lib/compaction-output'
 import { LinkifiedText } from '@/lib/external-link'
 import { cn } from '@/lib/utils'
 
 const SLASH_STATUS_RE = /^slash:(?<command>\/[^\n]+)\n(?<output>[\s\S]*)$/
+
+interface CompactionRecordProps extends CompactionOutput {
+  /** The backend's full report, kept as the row's tooltip. */
+  output: string
+}
+
+/** A manual `/compress` is a transcript-wide state change, not command output:
+ *  a divider that says what happened to the context, with the backend's own
+ *  numbers, instead of a mono `/compress` header over two lines of report. */
+const CompactionRecordRow: FC<CompactionRecordProps> = ({ messages, output, tokens }) => {
+  const { t } = useI18n()
+
+  return (
+    <MessagePrimitive.Root
+      className="flex max-w-[min(86%,44rem)] flex-wrap items-center justify-center gap-1.5 self-center px-2 py-0.5 text-[0.6875rem] leading-5 text-muted-foreground/60"
+      data-role="system"
+      data-slot="aui_compaction-record"
+      title={output}
+    >
+      <Codicon className="text-muted-foreground/55" name="history" size="0.75rem" />
+      <span className="text-muted-foreground/55">{t.assistant.thread.compacted}</span>
+      {messages ? (
+        <>
+          <span className="text-muted-foreground/35">·</span>
+          <span className="font-mono text-[0.65rem]">{messages}</span>
+        </>
+      ) : null}
+      {tokens ? (
+        <>
+          <span className="text-muted-foreground/35">·</span>
+          <span className="font-mono text-[0.65rem]">{tokens} tok</span>
+        </>
+      ) : null}
+      <MessageTimelineTimestamp />
+    </MessagePrimitive.Root>
+  )
+}
+
+/** The compaction divider for a slash row, or null when the output is something
+ *  else (or unreadable — then the generic slash row keeps the record). */
+function compactionRecordRow(command: string, output: string): ReactNode | null {
+  if (command.trim() !== '/compress') {
+    return null
+  }
+
+  const compaction = parseCompactionOutput(output)
+
+  return compaction ? <CompactionRecordRow output={output} {...compaction} /> : null
+}
+
+
 const STEER_NOTE_RE = /^steer:(?<text>[\s\S]+)$/
 const REVIEW_NOTE_RE = /^review:(?<label>[^:\n]+):?\s*(?<detail>[\s\S]*)$/
 // A usage-window plan gauge exactly as the backend renders it: `[` + 10 cells of
@@ -171,6 +223,12 @@ export const SystemMessage: FC = () => {
 
   if (slashStatus?.groups) {
     const output = slashStatus.groups.output.trim()
+    const record = compactionRecordRow(slashStatus.groups.command, output)
+
+    if (record) {
+      return record
+    }
+
     // Single-line status (e.g. "model → x") reads best centered inline; padded
     // multiline output (catalogs, usage tables) needs left-aligned, wider room
     // or the column alignment breaks.

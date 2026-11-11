@@ -331,7 +331,7 @@ export function usePromptActions({
       role: ChatMessage['role'],
       text: string,
       storedSessionId?: string | null,
-      options: { appendAfterActiveReply?: boolean } = {}
+      options: { appendAfterActiveReply?: boolean; at?: number; id?: string } = {}
     ) => {
       // Strip ANSI: slash-command output from the backend worker carries SGR
       // color codes (e.g. "Unknown command" in red). The ESC byte is invisible
@@ -343,7 +343,7 @@ export function usePromptActions({
         return
       }
 
-      const messageId = `${role}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+      const messageId = options.id ?? `${role}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 
       updateSessionState(
         sessionId,
@@ -356,7 +356,7 @@ export function usePromptActions({
             // carries it: the epoch-seconds stamp (matching the gateway's
             // `time.time()` rows) lets the transcript reconciler re-anchor it
             // by age instead of pinning it to the transcript tail forever.
-            timestamp: Date.now() / 1000
+            timestamp: options.at ?? Date.now() / 1000
           }
 
           // Mid-turn correction: arrival order. The bubble lands after the
